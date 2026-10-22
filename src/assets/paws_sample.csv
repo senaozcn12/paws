@@ -1,0 +1,6 @@
+chip_id,animal,species,name,age,sex,appointment type,diagnosis,treatment,date,notes
+12345_DJ,dog,pug,luna,6,F,Routine Examination,minor ear irritation,,9/1/2026,follow-up recommended in two weeks 
+12346_SK,cat,ragdoll,coco,1,F,Routine Examination,,vaccines ,9/2/2026,aggressive 
+12347_CY,rabbit,florida white,bella,2,F,Routine Examination,,,9/3/2026,
+85936_AX,tiger,bengal,milo,20,M,Routine Examination,,,9/4/2026,
+12349_WE,horse,clydesdale ,penny,16,M,Routine Examination,,,9/5/2026,
