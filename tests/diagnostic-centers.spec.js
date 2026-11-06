@@ -14,6 +14,9 @@ async function mock(page,role='diagnostic_staff',status='approved'){
  await page.route('**/rest/v1/pharmacies*',route=>route.fulfill({json:[]}));
  await page.route('**/rest/v1/diagnostic_centers*',route=>route.fulfill({json:route.request().url().includes('id=eq.')?center:[center]}));
  await page.route('**/rest/v1/rpc/paws_diagnostic_center_id',route=>route.fulfill({json:centerId}));
+ await page.route('**/rest/v1/diagnostic_requests*', route =>
+    route.fulfill({ json: [] })
+  );
  return{user,token,center,member};
 }
 async function signIn(page){await page.goto('/');await page.getByLabel('Email',{exact:true}).fill('staff@example.com');await page.getByLabel('Password',{exact:true}).fill('Longer-password1!');await page.getByRole('button',{name:'Log In'}).click();}
@@ -35,7 +38,13 @@ test('staff sees approved center access and Account without patient or pharmacy 
  await expect(page.getByRole('heading',{name:'Diagnostic center',exact:true})).toBeVisible();await expect(page.getByRole('heading',{name:'Central Diagnostics',exact:true})).toBeVisible();
  await expect(page.getByRole('status')).toContainText('approved and linked');
  await expect(page.getByLabel('Unique Chip ID or Global ID')).toHaveCount(0);await expect(page.getByRole('heading',{name:'Pharmacy fulfillment'})).toHaveCount(0);
- await expect(page.getByText('Diagnostic test ordering and results submission are not available in this version.')).toBeVisible();
+ await expect(
+    page.getByRole('heading', { name: 'Diagnostic Center Queue' })
+  ).toBeVisible();
+  
+  await expect(
+    page.getByText('No diagnostic requests assigned to your center.')
+  ).toBeVisible();
  await page.screenshot({path:'test-results/diagnostic-center-access.png',fullPage:true});
  await page.getByRole('button',{name:'Account',exact:true}).click();await expect(page.getByRole('heading',{name:'Account',exact:true})).toBeVisible();await expect(page.getByRole('heading',{name:'Diagnostic center administration'})).toHaveCount(0);
  await page.getByRole('button',{name:'Log Out',exact:true}).click();await expect(page.getByRole('heading',{name:'Veterinarian login'})).toBeVisible();

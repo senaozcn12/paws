@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../services/supabaseClient';
 import Account from './Account';
+import DiagnosticQueue from "../components/DiagnosticQueue";
 
 export default function DiagnosticCenter({ profile, onLogout, authError }) {
   const [center, setCenter] = useState(null);
@@ -35,7 +36,7 @@ export default function DiagnosticCenter({ profile, onLogout, authError }) {
   </header>{authError && <p className="error-message" role="alert">{authError}</p>}
     {account ? <Account profile={profile} onLogout={onLogout} embedded/> : <section className="search-panel" aria-labelledby="center-access-heading"><h2 id="center-access-heading">Center access</h2>
       {loading && <p role="status">Checking diagnostic-center access...</p>}{error && <p className="error-message" role="alert">{error}</p>}
-      {!loading && center && <><h3>{center.name}</h3><p>{profile.email}</p><p className="success-message" role="status">Your staff account is approved and linked to this diagnostic center.</p><p>Diagnostic test ordering and results submission are not available in this version.</p></>}
+      {!loading && center && <><h3>{center.name}</h3><p>{profile.email}</p><p className="success-message" role="status">Your staff account is approved and linked to this diagnostic center.</p><DiagnosticQueue centerId={center.id} /></>}
       <button type="button" className="secondary-button" disabled={loading} onClick={() => setRefresh(value => value + 1)}>Refresh center access</button>
     </section>}
   </main>;
