@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { supabase } from "../services/supabaseClient";
 
@@ -30,7 +31,7 @@ function displayDate(value) {
   });
 }
 
-function TreatmentHistory({ animal }) {
+function TreatmentHistory({ animal, mode = "all" }) {
   const chipId = animal.chip_id;
 
   const [records, setRecords] = useState([]);
@@ -43,6 +44,9 @@ function TreatmentHistory({ animal }) {
   const [loadError, setLoadError] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+
+  const showForm = mode === "notes" || mode === "all";
+  const showHistory = mode === "history" || mode === "all";
 
   useEffect(() => {
     let active = true;
@@ -135,116 +139,127 @@ function TreatmentHistory({ animal }) {
   }
 
   return (
-    <section
-      className="treatment-panel"
-      aria-labelledby="treatment-heading"
-    >
-      <h2 id="treatment-heading">Treatments and notes</h2>
+    <section className="treatment-panel" aria-labelledby="treatment-heading">
+      {showForm && (
+        <>
+          <h2 id="treatment-heading">Add Treatment Notes</h2>
 
-      <p className="muted">
-        Add a treatment for {animal.name || chipId} ({chipId}).
-      </p>
+          <p className="muted">
+            Add a treatment for {animal.name || chipId} ({chipId}).
+          </p>
 
-      <form className="treatment-form" onSubmit={handleSave}>
-        <fieldset disabled={saving || loading || Boolean(loadError)}>
-          <div className="form-group">
-            <label htmlFor="treatment-date">Treatment date</label>
-            <input
-              id="treatment-date"
-              type="date"
-              value={date}
-              onChange={(event) => {
-                setDate(event.target.value);
-                setMessage("");
-              }}
-              required
-            />
-          </div>
+          <form className="treatment-form" onSubmit={handleSave}>
+            <fieldset disabled={saving || loading || Boolean(loadError)}>
+              <div className="form-group">
+                <label htmlFor="treatment-date">Treatment date</label>
+                <input
+                  id="treatment-date"
+                  type="date"
+                  value={date}
+                  onChange={(event) => {
+                    setDate(event.target.value);
+                    setMessage("");
+                  }}
+                  required
+                />
+              </div>
 
-          <div className="form-group">
-            <label htmlFor="treatment-description">Treatment</label>
-            <input
-              id="treatment-description"
-              type="text"
-              value={treatment}
-              onChange={(event) => {
-                setTreatment(event.target.value);
-                setMessage("");
-              }}
-              placeholder="For example: ear cleaning or vaccination"
-              required
-            />
-          </div>
+              <div className="form-group">
+                <label htmlFor="treatment-description">Treatment</label>
+                <input
+                  id="treatment-description"
+                  type="text"
+                  value={treatment}
+                  onChange={(event) => {
+                    setTreatment(event.target.value);
+                    setMessage("");
+                  }}
+                  placeholder="For example: ear cleaning or vaccination"
+                  required
+                />
+              </div>
 
-          <div className="form-group">
-            <label htmlFor="treatment-notes">Notes (optional)</label>
-            <textarea
-              id="treatment-notes"
-              value={notes}
-              onChange={(event) => {
-                setNotes(event.target.value);
-                setMessage("");
-              }}
-              placeholder="Add observations or follow-up instructions"
-              rows={4}
-            />
-          </div>
+              <div className="form-group">
+                <label htmlFor="treatment-notes">Notes (optional)</label>
+                <textarea
+                  id="treatment-notes"
+                  value={notes}
+                  onChange={(event) => {
+                    setNotes(event.target.value);
+                    setMessage("");
+                  }}
+                  placeholder="Add observations or follow-up instructions"
+                  rows={4}
+                />
+              </div>
 
-          <button type="submit">
-            {saving ? "Saving..." : "Save Treatment"}
+              <button type="submit">
+                {saving ? "Saving..." : "Save Treatment"}
+              </button>
+            </fieldset>
+          </form>
+
+          {error && (
+            <p className="error-message" role="alert">
+              {error}
+            </p>
+          )}
+
+          <p className="success-message" role="status">
+            {message}
+          </p>
+        </>
+      )}
+
+      {showHistory && (
+        <>
+          <h2 id={showForm ? "saved-treatment-heading" : "treatment-heading"}>
+            Saved Treatment History
+          </h2>
+
+          <p className="muted">
+            Previously recorded treatments for {animal.name || chipId}.
+          </p>
+
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={() => setRefreshCount((count) => count + 1)}
+            disabled={loading || saving}
+          >
+            {loading ? "Loading..." : "Refresh History"}
           </button>
-        </fieldset>
-      </form>
 
-      {error && (
-        <p className="error-message" role="alert">
-          {error}
-        </p>
-      )}
+          {loadError && (
+            <p className="error-message" role="alert">
+              {loadError}
+            </p>
+          )}
 
-      <p className="success-message" role="status">
-        {message}
-      </p>
+          {loading ? (
+            <p role="status">Loading treatments...</p>
+          ) : loadError ? null : records.length === 0 ? (
+            <p>No additional treatments saved for this animal.</p>
+          ) : (
+            <ul className="treatment-list">
+              {records.map((record) => (
+                <li key={record.id}>
+                  <p className="treatment-entry-date">
+                    <time dateTime={record.date}>
+                      {displayDate(record.date)}
+                    </time>
+                  </p>
 
-      <h3>Saved treatment history</h3>
+                  <h4>{record.treatment}</h4>
 
-      <button
-        type="button"
-        className="secondary-button"
-        onClick={() => setRefreshCount((count) => count + 1)}
-        disabled={loading || saving}
-      >
-        {loading ? "Loading..." : "Refresh History"}
-      </button>
-
-      {loadError && (
-        <p className="error-message" role="alert">
-          {loadError}
-        </p>
-      )}
-
-      {loading ? (
-        <p role="status">Loading treatments...</p>
-      ) : loadError ? null : records.length === 0 ? (
-        <p>No additional treatments saved for this animal.</p>
-      ) : (
-        <ul className="treatment-list">
-          {records.map((record) => (
-            <li key={record.id}>
-              <p className="treatment-entry-date">
-                <time dateTime={record.date}>
-                  {displayDate(record.date)}
-                </time>
-              </p>
-
-              <h4>{record.treatment}</h4>
-
-              <p className="treatment-entry-notes">
-                {record.notes || "No notes added."}
-              </p>
-            </li>
-          ))}
-        </ul>
+                  <p className="treatment-entry-notes">
+                    {record.notes || "No notes added."}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
       )}
     </section>
   );

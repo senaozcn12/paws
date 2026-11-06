@@ -72,6 +72,8 @@ function Login() {
             {loading ? "Logging in..." : "Log In"}
           </button>
         </form>
+        <p className="auth-links"><a href="/forgot-password">Forgot password?</a></p>
+        <p className="auth-links"><a href="/register">Register for an account</a></p>
       </main>
     </div>
   );

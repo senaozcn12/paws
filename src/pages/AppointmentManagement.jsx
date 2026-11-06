@@ -80,13 +80,39 @@ function AppointmentManagement({ animal }) {
       return;
     }
 
+    const cleanReason = reason.trim();
+
+    if (cleanReason.length < 5 || cleanReason.length > 250) {
+      setError("Reason for visit must be between 5 and 250 characters.");
+      return;
+    }
+
+    try {
+      const existing = readAppointments(storageKey);
+
+      const duplicate = existing.some(
+        (appointment) =>
+          appointment.date === date &&
+          appointment.time === time &&
+          getStatus(appointment) === "upcoming"
+      );
+
+      if (duplicate) {
+        setError("An appointment already exists at this date and time.");
+        return;
+      }
+    } catch {
+      setError("Unable to verify existing appointments. Please try again.");
+      return;
+    }
+
     const record = {
       id:
         globalThis.crypto?.randomUUID?.() ||
         `${Date.now()}-${Math.random().toString(36).slice(2)}`,
       date,
       time,
-      reason: reason.trim(),
+      reason: cleanReason,
       status: "upcoming",
     };
 
